@@ -185,6 +185,8 @@ The app automatically configures:
 
 **Production URL**: https://d2nylb7v6suh5h.cloudfront.net
 
+![Voice App Diagram](./SynthesisApp-MultilingualTTS.png)
+
 ## CI/CD Pipeline
 
 ### **Automated Deployment**
