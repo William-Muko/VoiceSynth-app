@@ -1,10 +1,10 @@
 # CI/CD Deployment Guide
 
-## 🚀 Automated Deployment with GitHub Actions
+## Automated Deployment with GitHub Actions
 
 This project includes automated CI/CD pipelines for seamless deployment to AWS.
 
-## 📋 Setup Instructions
+## Setup Instructions
 
 ### 1. **GitHub Repository Setup**
 ```bash
@@ -32,7 +32,7 @@ Your AWS user needs these permissions:
 - API Gateway (full access)
 - IAM (create/update roles)
 
-## 🔄 CI/CD Workflows
+## CI/CD Workflows
 
 ### **Test Workflow** (`test.yml`)
 Runs on every push and PR:
@@ -43,13 +43,13 @@ Runs on every push and PR:
 
 ### **Deploy Workflow** (`deploy.yml`)
 Runs on push to `main` branch:
-1. 🏗️ Deploys infrastructure (CloudFormation)
-2. 📦 Packages Lambda function
-3. 🚀 Updates Lambda code
-4. 🌐 Deploys frontend to S3
-5. 📝 Outputs website URL
+1. Deploys infrastructure (CloudFormation)
+2. Packages Lambda function
+3. Updates Lambda code
+4. Deploys frontend to S3
+5. Outputs website URL
 
-## 🎯 Deployment Process
+## Deployment Process
 
 ### **Automatic Deployment:**
 1. Push code to `main` branch
@@ -78,7 +78,7 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### **Environment Variables:**
 - `AWS_REGION`: us-east-1 (default)
@@ -89,7 +89,7 @@ aws cloudformation deploy \
 - Update stack name in workflow files
 - Add environment-specific deployments
 
-## 📊 Monitoring
+## Monitoring
 
 ### **GitHub Actions:**
 - View deployment status in Actions tab
@@ -101,7 +101,7 @@ aws cloudformation deploy \
 - API Gateway metrics
 - S3 access logs
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### **Common Issues:**
 1. **AWS Permissions**: Ensure proper IAM permissions
@@ -114,7 +114,7 @@ aws cloudformation deploy \
 aws cloudformation delete-stack --stack-name voicesynth-stack
 ```
 
-## 🎉 Benefits
+## Benefits
 
 - ✅ **Zero-downtime deployments**
 - ✅ **Automated testing**

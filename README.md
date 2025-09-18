@@ -1,8 +1,12 @@
 # Voice Synthesis App
 
-A serverless multilingual text-to-speech application built with AWS services. Convert text to natural-sounding speech with automatic translation and enterprise-grade security.
+## Talk Nerdy to Me 😂
+*I don't always talk to computers, but when I do.. they talk back, thanks to this serverless TTS stack on AWS*
 
-## 🏗️ Architecture
+## Overview 
+A serverless multilingual text-to-speech application built with AWS services. Convert text to natural-sounding speech with automatic translation and enterprise-grade security, the security scans were done with [Amazon Q](https://aws.amazon.com/q/)
+
+## Architecture
 
 ### AWS Services Used:
 - **Amazon S3**: Static website hosting & audio file storage
@@ -16,15 +20,9 @@ A serverless multilingual text-to-speech application built with AWS services. Co
 - **AWS IAM**: Security roles and policies
 
 ### Architecture Flow:
-1. User enters text on CloudFront-hosted website
-2. Frontend sends POST request to API Gateway
-3. API Gateway triggers Lambda function
-4. Lambda detects language and translates text (if needed)
-5. Lambda calls Amazon Polly to synthesize speech in target language
-6. Generated audio stored in S3 bucket with lifecycle policies
-7. Presigned URL returned for secure audio download
+![AWS Architecture Diagram](./Voicesynth-App.jpg)
 
-## 🚀 Quick Deployment
+## Quick Deployment
 
 ### Prerequisites:
 - AWS CLI installed and configured
@@ -97,7 +95,7 @@ DISTRIBUTION_ID=$(aws cloudfront list-distributions \
 aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
 ```
 
-## 📁 Project Structure
+## Project Structure
 ```
 voicesynth-app/
 ├── .github/workflows/     # CI/CD automation
@@ -124,7 +122,7 @@ voicesynth-app/
 └── README.md
 ```
 
-## 🎯 Features
+## Features
 
 ### **Core Functionality**
 - **Multilingual Support**: 8 languages (English, Spanish, French, German, Italian, Portuguese, Japanese)
@@ -142,7 +140,7 @@ voicesynth-app/
 - **Real-time Processing**: Fast text-to-speech conversion
 - **Auto-cleanup**: Files expire after 7 days for cost optimization
 
-## 🔧 Configuration
+## Configuration
 
 ### **Automatic Setup**
 The app automatically configures:
@@ -163,7 +161,7 @@ The app automatically configures:
 - **Portuguese**: Vitoria, Ricardo
 - **Japanese**: Mizuki, Takumi
 
-## 💰 Cost Optimization
+## Cost Optimization
 
 ### **Serverless Benefits**
 - **No idle costs**: Pay only for actual usage
@@ -183,11 +181,11 @@ The app automatically configures:
 
 *Costs include Lambda, Polly, Translate, S3, and CloudFront*
 
-## 🚀 Live Application
+## Live Application
 
-**Production URL**: https://d1fbfr7wbs38k8.cloudfront.net
+**Production URL**: https://d2nylb7v6suh5h.cloudfront.net
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### **Automated Deployment**
 - **GitHub Actions**: Automatic deployment on push to main
@@ -201,7 +199,7 @@ The app automatically configures:
 3. Push to main branch triggers deployment
 4. Monitor deployment in Actions tab
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### **Common Issues**
 - **"Missing Authentication Token"**: Use CloudFront URL, not API endpoint
@@ -219,7 +217,7 @@ The app automatically configures:
 - **Cache issues**: Use CloudFront invalidation to force updates
 - **Audio quality**: Neural voices provide better quality than standard
 
-## 📊 Monitoring
+## Monitoring
 
 ### **AWS CloudWatch**
 - Lambda function logs and metrics
@@ -231,7 +229,7 @@ The app automatically configures:
 - Popular languages and voices
 - User engagement patterns
 
-## 🔒 Security
+## Security
 
 ### **Implemented Protections**
 - **HTTPS Enforcement**: All traffic encrypted
@@ -246,7 +244,7 @@ The app automatically configures:
 - **Presigned URLs**: Temporary, secure access
 - **No tracking**: No user data collection
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch
@@ -254,6 +252,6 @@ The app automatically configures:
 4. Submit pull request
 5. Automated CI/CD handles deployment
 
-## 📄 License
+## License
 
-MIT License - See LICENSE file for details
+MIT License, See [LICENSE](LICENSE) file for details
