@@ -116,9 +116,7 @@ voicesynth-app/
 │   └── deploy.py        # Stack deployment script
 ├── .gitignore           # Version control exclusions
 ├── DEPLOYMENT.md        # CI/CD setup guide
-├── SECURITY.md          # Security documentation
-├── PROJECT_GUIDE.md     # Learning objectives
-├── setup.py             # Cross-platform deployment orchestrator
+├── setup.py             # Cross-platform deployment orchestrator            
 └── README.md
 ```
 
