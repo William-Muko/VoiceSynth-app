@@ -1,0 +1,29 @@
+# Dependencies
+backend/deployment/
+backend/lambda-deployment.zip
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# AWS
+.aws/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp

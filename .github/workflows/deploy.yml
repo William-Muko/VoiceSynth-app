@@ -1,0 +1,88 @@
+name: Deploy Voice Synthesis App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+  STACK_NAME: voicesynth-stack
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Deploy Infrastructure
+      run: |
+        cd infrastructure
+        aws cloudformation deploy \
+          --template-file template.yaml \
+          --stack-name ${{ env.STACK_NAME }} \
+          --capabilities CAPABILITY_NAMED_IAM \
+          --parameter-overrides ProjectName=voicesynth
+
+    - name: Package Lambda Function
+      run: |
+        cd backend
+        mkdir -p deployment
+        cp src/lambda_function.py deployment/
+        pip install -r requirements.txt -t deployment/
+        cd deployment
+        zip -r ../lambda-deployment.zip .
+
+    - name: Update Lambda Function
+      run: |
+        cd backend
+        aws lambda update-function-code \
+          --function-name voicesynth-synthesize \
+          --zip-file fileb://lambda-deployment.zip
+
+    - name: Get API Endpoint
+      id: get-api
+      run: |
+        API_ENDPOINT=$(aws cloudformation describe-stacks \
+          --stack-name ${{ env.STACK_NAME }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" \
+          --output text)
+        echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+
+    - name: Update Frontend API Endpoint
+      run: |
+        cd frontend
+        sed -i "s|const API_ENDPOINT = '.*';|const API_ENDPOINT = '${{ steps.get-api.outputs.api_endpoint }}';|g" app.js
+
+    - name: Deploy Frontend
+      run: |
+        cd frontend
+        BUCKET_NAME=$(aws cloudformation describe-stacks \
+          --stack-name ${{ env.STACK_NAME }} \
+          --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" \
+          --output text)
+        aws s3 sync . s3://$BUCKET_NAME --delete --exclude "*.bat"
+
+    - name: Get Website URL
+      run: |
+        WEBSITE_URL=$(aws cloudformation describe-stacks \
+          --stack-name ${{ env.STACK_NAME }} \
+          --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" \
+          --output text)
+        echo "🚀 App deployed successfully!"
+        echo "Website URL: $WEBSITE_URL"

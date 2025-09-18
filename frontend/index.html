@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.amazonaws.com; media-src 'self' https://*.amazonaws.com data:; object-src 'none';">
+    <title>Voice Synthesis App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Text to Speech Converter</h1>
+        
+        <!-- Text Area Section -->
+        <div class="text-section">
+            <textarea id="textInput" placeholder="Enter text to convert to speech..." rows="6" maxlength="3000"></textarea>
+            <div class="word-count">
+                <span id="wordCount">0</span> / 3000 characters
+            </div>
+        </div>
+        
+        <!-- Voice and Language Selection Section -->
+        <div class="selection-section">
+            <div class="language-section">
+                <label for="languageSelect">Language:</label>
+                <select id="languageSelect">
+                    <option value="en-US">English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="es-ES">Spanish (Spain)</option>
+                    <option value="fr-FR">French (France)</option>
+                    <option value="de-DE">German (Germany)</option>
+                    <option value="it-IT">Italian (Italy)</option>
+                    <option value="pt-BR">Portuguese (Brazil)</option>
+                    <option value="ja-JP">Japanese (Japan)</option>
+                </select>
+            </div>
+            <div class="voice-section">
+                <label for="voiceSelect">Voice:</label>
+                <select id="voiceSelect">
+                    <option value="Joanna">Joanna (Female)</option>
+                    <option value="Matthew">Matthew (Male)</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Voice Settings Section -->
+        <div class="voice-settings">
+            <h3>Voice Speed</h3>
+            <div class="speed-control">
+                <label for="speedSelect">Speed:</label>
+                <select id="speedSelect">
+                    <option value="0.5">0.5x (Slow)</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1x (Normal)</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x (Fast)</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Convert Button -->
+        <button id="convertBtn">Convert to Speech</button>
+        <!-- Loading and Audio Section -->
+        <div class="output-section">
+            <div id="loading" class="hidden">Converting...</div>
+            <div id="result" class="hidden">
+                <div id="translationInfo" class="hidden translation-info">
+                    <strong>Translation:</strong> <span id="translatedText"></span>
+                </div>
+                <audio id="audioPlayer" controls></audio>
+            </div>
+            <div id="error" class="hidden error"></div>
+        </div>
+        
+        <!-- Download and Share Section -->
+        <div class="action-section">
+            <button id="downloadBtn" class="hidden">Download</button>
+            <button id="shareBtn" class="hidden">Share</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

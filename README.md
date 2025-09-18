@@ -1,103 +1,259 @@
-# VoiceSynth Build Your Own Text-to-Speech App
+# Voice Synthesis App
 
-A serverless web application that converts text( can either be a blog post, for example, you can use the application to read you a book while driving or riding a bike) into natural-sounding speech using Amazon Polly. This project demonstrates the integration of a modern frontend with cloud-based AI services through a serverless API backend.
+A serverless multilingual text-to-speech application built with AWS services. Convert text to natural-sounding speech with automatic translation and enterprise-grade security.
 
-## Have a prototype 
+## 🏗️ Architecture
 
-[Insert your live application URL here after deployment]
-*(example  https://your-website.bucket.s3-website-us-east-1.amazonaws.com)* **Should be a URL of the app hosted on S3**
+### AWS Services Used:
+- **Amazon S3**: Static website hosting & audio file storage
+- **AWS Lambda**: Serverless compute for text processing
+- **Amazon API Gateway**: RESTful API with CORS support
+- **Amazon Polly**: Neural text-to-speech synthesis
+- **Amazon Translate**: Automatic language translation
+- **Amazon Comprehend**: Language detection
+- **Amazon CloudFront**: Global CDN with HTTPS
+- **AWS CloudFormation**: Infrastructure as Code
+- **AWS IAM**: Security roles and policies
 
-## Project Overview
+### Architecture Flow:
+1. User enters text on CloudFront-hosted website
+2. Frontend sends POST request to API Gateway
+3. API Gateway triggers Lambda function
+4. Lambda detects language and translates text (if needed)
+5. Lambda calls Amazon Polly to synthesize speech in target language
+6. Generated audio stored in S3 bucket with lifecycle policies
+7. Presigned URL returned for secure audio download
 
-This project is meant to explore the capabilities of cloud-based AI and serverless architectures. The application allows users to input text, select from a variety of voices, and instantly play the generated speech directly in their browser.
+## 🚀 Quick Deployment
 
-### Architecture Diagram
+### Prerequisites:
+- AWS CLI installed and configured
+- Python 3.9+ installed
 
-```
- User's Browser
-       |
-       | (HTTP POST/GET)
-       v
- AWS API Gateway (REST API)
-       |
-       | (Invocation)
-       v
-    AWS Lambda (Python/Node.js)
-       |
-       | (SDK Call)
-       v
-  Amazon Polly (TTS Service)
-```
+### Automated Deployment:
+```bash
+# Cross-platform Python script
+python setup.py
 
-### Features
-
--   **Real-time Synthesis:** Convert text to speech in real-time.
--   **Multiple Voices:** Choose from a wide selection of neural and standard voices across different languages.
--   **Audio Playback:** Stream and play generated audio directly in the browser with a built-in player.
--   **Serverless Backend:** Entirely built on scalable AWS serverless technologies (Lambda, API Gateway).
--   **Clean UI:** A simple and intuitive user interface.
-
-## Technology Stack
-
-Component          | Technology Used                         
------------------- | ----------------------------------------
-**Frontend**       | HTML5, CSS3, JavaScript          
-**Backend (API)**  | AWS Lambda (Python 3.x / Node.js)       
-**API Gateway**    | AWS API Gateway (REST API)              
-**Text-to-Speech** | Amazon Polly                            
-**Security**       | AWS IAM (Roles & Policies)              
-**Storage (Optional)** | AWS S3 (for file downloads)          
-**Hosting**        | AWS S3 Static Website Hosting         
-
-## Project Structure
-
-```
-text-to-speech-app/
-├── frontend/                 # All frontend source files
-│   ├── index.html            # Main application page
-│   ├── style.css             # Stylesheets
-│   ├── script.js             # Main application logic
-│   └── voices.json           # Optional: Static list of voices
-├── backend/                  # Backend Lambda function code
-│   └── lambda_function.py    # or app.js for Node.js
-├── docs/                     # Additional documentation
-│   └── ARCHITECTURE.md       # Detailed architecture explanation
-├── README.md                 # This file
-└── .gitignore                # Git ignore file
+# Or make executable (Linux/Mac)
+chmod +x setup.py
+./setup.py
 ```
 
-## ⚙️ Setup & Installation
+### Manual Deployment (All Platforms):
 
-### Prerequisites
+**1. Deploy Infrastructure:**
+```bash
+cd infrastructure
+aws cloudformation deploy \
+  --template-file template.yaml \
+  --stack-name voicesynth-stack \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides ProjectName=voicesynth
+```
 
--   An AWS Account (with appropriate permissions to create Lambda, API Gateway, and Polly).
--   Git is installed on your local machine.
--   A code editor, VS Code.
+**2. Package Lambda Function:**
+```bash
+cd ../backend
+mkdir -p deployment
+cp src/lambda_function.py deployment/
+pip install -r requirements.txt -t deployment/
+cd deployment
+zip -r ../lambda-deployment.zip .
+cd ..
+```
 
+**3. Update Lambda Function:**
+```bash
+aws lambda update-function-code \
+  --function-name voicesynth-synthesize \
+  --zip-file fileb://lambda-deployment.zip
+```
 
-## Learning Objectives
+**4. Deploy Frontend:**
+```bash
+cd ../frontend
+# Get bucket name from CloudFormation
+BUCKET_NAME=$(aws cloudformation describe-stacks \
+  --stack-name voicesynth-stack \
+  --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" \
+  --output text)
 
-This project was designed to help you learn:
--   The practical use of cloud AI/ML services (Amazon Polly).
--   Serverless backend development with AWS Lambda and API Gateway.
--   Asynchronous programming in JavaScript to handle API requests.
--   Security best practices using IAM roles and policies.
--   Full-stack application design and deployment.
+# Update API endpoint in app.js
+API_ENDPOINT=$(aws cloudformation describe-stacks \
+  --stack-name voicesynth-stack \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" \
+  --output text)
 
-**Biggest Challenges Overcome:**
-*   Configuring the IAM roles correctly to allow Lambda to invoke Polly.
-*   Handling the binary audio response from the API in the frontend.
-*   Debugging CORS issues between API Gateway and the frontend.
+sed -i "s|https://your-api-gateway-url.amazonaws.com/prod/synthesize|$API_ENDPOINT|g" app.js
 
-## License
+# Upload to S3
+aws s3 sync . s3://$BUCKET_NAME --delete --exclude "*.py"
 
-This project is licensed for educational purposes. See the [MIT LICENSE](LICENSE) file for details.
+# Clear CloudFront cache
+DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+  --query "DistributionList.Items[?Origins.Items[0].DomainName=='$BUCKET_NAME.s3.us-east-1.amazonaws.com'].Id" \
+  --output text)
+aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+```
 
-## Support
+## 📁 Project Structure
+```
+voicesynth-app/
+├── .github/workflows/     # CI/CD automation
+│   ├── deploy.yml        # Production deployment
+│   └── test.yml          # Code validation
+├── frontend/              # Static website (HTML/CSS/JS)
+│   ├── index.html        # Main application interface
+│   ├── app.js           # Frontend logic & API calls
+│   ├── styles.css       # Application styling
+│   └── deploy.py        # S3 deployment script
+├── backend/              # Lambda function
+│   ├── src/
+│   │   └── lambda_function.py  # Polly + Translate integration
+│   ├── requirements.txt # Python dependencies
+│   └── deploy.py        # Lambda packaging script
+├── infrastructure/       # AWS CloudFormation
+│   ├── template.yaml    # Complete infrastructure definition
+│   └── deploy.py        # Stack deployment script
+├── .gitignore           # Version control exclusions
+├── DEPLOYMENT.md        # CI/CD setup guide
+├── SECURITY.md          # Security documentation
+├── PROJECT_GUIDE.md     # Learning objectives
+├── setup.py             # Cross-platform deployment orchestrator
+└── README.md
+```
 
-If you get stuck, here are some resources:
--   [Amazon Polly Documentation](https://docs.aws.amazon.com/polly/)
--   [AWS Lambda Documentation](https://docs.aws.amazon.com/lambda/)
--   [MDN Web Docs: Using the Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
+## 🎯 Features
 
-**Built as part of the Cloud Intensive Course.** *Happy Coding* ☕
+### **Core Functionality**
+- **Multilingual Support**: 8 languages (English, Spanish, French, German, Italian, Portuguese, Japanese)
+- **Automatic Translation**: Input text in any language, get native speech
+- **Neural Voices**: 18+ high-quality Amazon Polly voices
+- **Speed Control**: Adjustable playback speed (0.5x - 2x)
+- **Auto-play**: Instant audio playback after conversion
+- **Download & Share**: Save audio files and share the app
+
+### **Technical Features**
+- **Serverless Architecture**: Pay-per-use, auto-scaling
+- **HTTPS Security**: CloudFront CDN with SSL/TLS
+- **Enterprise Security**: XSS protection, input validation, CORS
+- **Responsive Design**: Works on desktop and mobile
+- **Real-time Processing**: Fast text-to-speech conversion
+- **Auto-cleanup**: Files expire after 7 days for cost optimization
+
+## 🔧 Configuration
+
+### **Automatic Setup**
+The app automatically configures:
+- **S3 Buckets**: CORS settings, lifecycle policies, versioning
+- **Lambda Function**: Polly, Translate, and Comprehend permissions
+- **API Gateway**: CORS headers, rate limiting
+- **CloudFront**: HTTPS enforcement, global CDN
+- **IAM Roles**: Least-privilege access policies
+- **Security**: Input validation, XSS protection, HTTPS-only
+
+### **Supported Languages & Voices**
+- **English (US)**: Joanna, Matthew, Ivy, Justin
+- **English (UK)**: Amy, Brian, Emma
+- **Spanish**: Lucia, Enrique
+- **French**: Celine, Mathieu
+- **German**: Marlene, Hans
+- **Italian**: Carla, Giorgio
+- **Portuguese**: Vitoria, Ricardo
+- **Japanese**: Mizuki, Takumi
+
+## 💰 Cost Optimization
+
+### **Serverless Benefits**
+- **No idle costs**: Pay only for actual usage
+- **Auto-scaling**: Handles traffic spikes automatically
+- **Efficient processing**: Lambda timeout optimized to 30 seconds
+
+### **Storage Optimization**
+- **Lifecycle policies**: Audio files auto-delete after 7 days
+- **Presigned URLs**: 1-hour expiration for security
+- **CloudFront caching**: Reduced origin requests
+- **Compression**: Optimized file sizes
+
+### **Estimated Costs** (Monthly)
+- **Light usage** (100 conversions): ~$0.50
+- **Medium usage** (1,000 conversions): ~$3.00
+- **Heavy usage** (10,000 conversions): ~$25.00
+
+*Costs include Lambda, Polly, Translate, S3, and CloudFront*
+
+## 🚀 Live Application
+
+**Production URL**: https://d1fbfr7wbs38k8.cloudfront.net
+
+## 🔄 CI/CD Pipeline
+
+### **Automated Deployment**
+- **GitHub Actions**: Automatic deployment on push to main
+- **Testing**: Code validation and security scanning
+- **Infrastructure**: CloudFormation stack management
+- **Cache Management**: Automatic CloudFront invalidation
+
+### **Setup CI/CD**
+1. Fork/clone repository to GitHub
+2. Add AWS credentials to GitHub Secrets
+3. Push to main branch triggers deployment
+4. Monitor deployment in Actions tab
+
+## 🛠️ Troubleshooting
+
+### **Common Issues**
+- **"Missing Authentication Token"**: Use CloudFront URL, not API endpoint
+- **"Failed to convert text"**: Check Lambda logs in CloudWatch
+- **Translation not showing**: Clear browser cache or wait for CloudFront
+- **Voice not available**: Some voices don't support neural engine (auto-fallback)
+
+### **Deployment Issues**
+- **Stack exists**: Delete existing CloudFormation stack before retry
+- **Permissions**: Ensure AWS credentials have required permissions
+- **Region**: Verify deployment in correct AWS region (us-east-1)
+
+### **Performance**
+- **Slow loading**: CloudFront propagation takes 5-15 minutes
+- **Cache issues**: Use CloudFront invalidation to force updates
+- **Audio quality**: Neural voices provide better quality than standard
+
+## 📊 Monitoring
+
+### **AWS CloudWatch**
+- Lambda function logs and metrics
+- API Gateway request/error rates
+- S3 storage usage and costs
+
+### **Application Metrics**
+- Conversion success rates
+- Popular languages and voices
+- User engagement patterns
+
+## 🔒 Security
+
+### **Implemented Protections**
+- **HTTPS Enforcement**: All traffic encrypted
+- **Input Validation**: XSS and injection prevention
+- **CORS Policies**: Controlled cross-origin access
+- **IAM Roles**: Least-privilege permissions
+- **Content Security Policy**: Browser-level protection
+
+### **Data Privacy**
+- **No persistent storage**: Text not stored permanently
+- **Auto-cleanup**: Audio files deleted after 7 days
+- **Presigned URLs**: Temporary, secure access
+- **No tracking**: No user data collection
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch
+3. Make changes with tests
+4. Submit pull request
+5. Automated CI/CD handles deployment
+
+## 📄 License
+
+MIT License - See LICENSE file for details
