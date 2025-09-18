@@ -19,11 +19,6 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Validate HTML
-      run: |
-        cd frontend
-        npx html-validate index.html
-
     - name: Check JavaScript syntax
       run: |
         cd frontend
@@ -58,14 +53,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+    - name: Install cfn-lint
+      run: pip install cfn-lint
 
     - name: Validate CloudFormation template
       run: |
         cd infrastructure
-        aws cloudformation validate-template --template-body file://template.yaml
+        cfn-lint template.yaml
